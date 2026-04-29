@@ -1,0 +1,16 @@
+services:
+  jobsbot:
+    build: .
+    image: jobsbot:latest
+    container_name: jobsbot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_PATH: /data/bot.db
+    volumes:
+      - jobsbot_data:/data
+    stop_grace_period: 15s
+
+volumes:
+  jobsbot_data:

@@ -1,0 +1,24 @@
+[Unit]
+Description=Job Application Telegram Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jobsbot
+Group=jobsbot
+WorkingDirectory=/opt/jobsbot
+EnvironmentFile=/opt/jobsbot/.env
+ExecStart=/opt/jobsbot/.venv/bin/python -m jobsbot
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/jobsbot
+
+[Install]
+WantedBy=multi-user.target
