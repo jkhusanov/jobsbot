@@ -6,6 +6,7 @@
 Telegram bot that fetches open jobs from an HTTP endpoint and lets users apply (name, Uzbek phone, email, CV). Submitted applications are forwarded to an admin Telegram chat. Uzbek-language UI.
 
 > [!CAUTION]
+>
 > ## Disclaimer — read before using
 >
 > **This project is vibecoded** — built quickly with heavy AI assistance and lightly hand-reviewed. It has **not** been independently audited or formally verified.
@@ -15,9 +16,22 @@ Telegram bot that fetches open jobs from an HTTP endpoint and lets users apply (
 > **You run it entirely at your own risk.**
 
 > [!IMPORTANT]
+>
 > ## You are the data controller
 >
 > If you deploy this bot, **you** become the data controller for the personal data it collects (applicant names, phone numbers, email addresses, CV files). Compliance with applicable laws — including but not limited to data-protection, employment, and privacy regulations in your jurisdiction — is **your responsibility**, not the author's. See [`SECURITY.md`](./SECURITY.md) for the full breakdown.
+
+> [!CAUTION]
+>
+> ## Ogohlantirish — foydalanishdan oldin o'qing (O'zbekcha)
+>
+> Bu loyiha **vibecode qilingan** — sun'iy intellekt yordamida tezkor ishlab chiqilgan va mustaqil tarzda audit qilinmagan. Dasturiy ta'minot [Apache License 2.0](./LICENSE) shartlari ostida **AS IS** holatida, **hech qanday kafolatsiz** taqdim etiladi.
+>
+> Muallif ushbu dasturdan foydalanish, uni joriy etish yoki undan foydalana olmaslik natijasida yuzaga keladigan har qanday zarar, ma'lumot yo'qolishi, maxfiylik buzilishi, qonun buzilishi yoki boshqa har qanday oqibat uchun **hech qanday mas'uliyat olmaydi**. Siz bot'ni **o'z mas'uliyatingiz ostida** ishga tushirasiz.
+>
+> Agar siz ushbu botni joriy etsangiz, undan yig'iladigan shaxsiy ma'lumotlar (ism, telefon raqami, email, CV) uchun **ma'lumotlar nazoratchisi** sizdan iborat bo'lasiz va O'zbekiston Respublikasining "Shaxsga doir ma'lumotlar to'g'risida"gi qonuni hamda boshqa amaldagi qonunlarga muvofiqligi uchun **siz mas'ulsiz**, muallif emas.
+>
+> _Yuqoridagi ingliz tilidagi matn yuridik jihatdan kuchga ega bo'lgan asosiy versiyadir. The English version above is the legally binding text; this Uzbek version is provided for convenience only._
 
 ---
 
