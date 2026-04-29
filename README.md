@@ -1,18 +1,23 @@
 # jobsbot
 
+[![status: vibecoded · use at your own risk](https://img.shields.io/badge/status-vibecoded%20%C2%B7%20use%20at%20your%20own%20risk-critical?style=for-the-badge)](#-disclaimer--read-before-using)
+[![license: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue?style=for-the-badge)](./LICENSE)
+
 Telegram bot that fetches open jobs from an HTTP endpoint and lets users apply (name, Uzbek phone, email, CV). Submitted applications are forwarded to an admin Telegram chat. Uzbek-language UI.
 
----
-
-> ## DISCLAIMER — READ BEFORE USING
+> [!CAUTION]
+> ## Disclaimer — read before using
 >
-> **This project is vibecoded** — built quickly with heavy AI assistance and lightly hand-reviewed. It has not been independently audited or formally verified.
+> **This project is vibecoded** — built quickly with heavy AI assistance and lightly hand-reviewed. It has **not** been independently audited or formally verified.
 >
 > It is provided **AS IS** under the [Apache License 2.0](./LICENSE), **with no warranty of any kind**, express or implied. The author accepts **no responsibility and no liability** for any damages, data loss, privacy incidents, regulatory violations, downtime, financial loss, or any other harm arising from your use of, deployment of, or inability to use this software.
 >
 > **You run it entirely at your own risk.**
+
+> [!IMPORTANT]
+> ## You are the data controller
 >
-> If you deploy this bot, **you** become the data controller for the personal data it collects (applicant names, phone numbers, email addresses, CV files). Compliance with applicable laws — including but not limited to data-protection, employment, and privacy regulations in your jurisdiction — is **your responsibility**, not the author's. See [`SECURITY.md`](./SECURITY.md) for more.
+> If you deploy this bot, **you** become the data controller for the personal data it collects (applicant names, phone numbers, email addresses, CV files). Compliance with applicable laws — including but not limited to data-protection, employment, and privacy regulations in your jurisdiction — is **your responsibility**, not the author's. See [`SECURITY.md`](./SECURITY.md) for the full breakdown.
 
 ---
 
