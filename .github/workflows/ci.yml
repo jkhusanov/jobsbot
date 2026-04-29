@@ -53,9 +53,17 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pip-audit
-      - name: Audit dependencies
+      - name: Extract declared runtime dependencies
         run: |
-          pip install -e .
-          # --skip-editable: don't try to look up our own unpublished package
-          # on PyPI; we only care about third-party deps for this audit.
-          pip-audit --strict --desc --skip-editable
+          python -c "
+          import tomllib
+          with open('pyproject.toml', 'rb') as f:
+              data = tomllib.load(f)
+          print('\n'.join(data['project']['dependencies']))
+          " > /tmp/runtime-requirements.txt
+          cat /tmp/runtime-requirements.txt
+      - name: Audit dependencies
+        # -r audits exactly the declared third-party deps without installing
+        # the local jobsbot package (which isn't on PyPI). --strict fails on
+        # any known CVE.
+        run: pip-audit --strict --desc -r /tmp/runtime-requirements.txt
