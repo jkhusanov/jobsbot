@@ -40,3 +40,9 @@ def setup_logging(level: str) -> None:
     root.setLevel(level.upper())
     # aiogram is chatty at INFO; tone it down a touch.
     logging.getLogger("aiogram.event").setLevel(logging.WARNING)
+    # CRITICAL: aiohttp's request logger emits the full URL at DEBUG, and
+    # Telegram bot API URLs contain the bot token (api.telegram.org/bot<TOKEN>/…).
+    # Pin these loggers at INFO regardless of root level so the token can't
+    # leak into journald even if someone runs LOG_LEVEL=DEBUG in prod.
+    for noisy in ("aiohttp.client", "aiohttp.access", "aiohttp.internal"):
+        logging.getLogger(noisy).setLevel(logging.INFO)

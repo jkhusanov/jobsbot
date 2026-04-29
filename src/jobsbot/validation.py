@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from dataclasses import dataclass
 
 from email_validator import EmailNotValidError, validate_email
@@ -32,9 +33,20 @@ class ValidationResult:
     error: str | None = None
 
 
+def _strip_unicode_controls(s: str) -> str:
+    """Remove control (Cc) and format (Cf) characters.
+
+    This drops C0/C1 control bytes, zero-width chars (ZWSP/ZWJ/ZWNJ), bidi
+    overrides (LRE/RLE/PDF/LRO/RLO), bidi isolates, the BOM, etc. — all of
+    which can be used to spoof how a string renders downstream (e.g., to
+    flip a file extension in an admin caption).
+    """
+    return "".join(c for c in s if unicodedata.category(c) not in ("Cc", "Cf"))
+
+
 def normalise_phone(raw: str) -> str:
     """Best-effort canonicalisation to +998XXXXXXXXX. Caller still validates."""
-    s = raw.strip().replace(" ", "")
+    s = _strip_unicode_controls(raw).strip().replace(" ", "")
     if s.startswith("+"):
         return "+" + _NON_DIGITS_RE.sub("", s[1:])
     digits = _NON_DIGITS_RE.sub("", s)
@@ -58,7 +70,7 @@ def validate_phone(raw: str) -> ValidationResult:
 
 
 def validate_name(raw: str) -> ValidationResult:
-    cleaned = " ".join(raw.split())
+    cleaned = " ".join(_strip_unicode_controls(raw).split())
     if not (2 <= len(cleaned) <= 100):
         return ValidationResult(ok=False, error="invalid_name_length")
     if not _NAME_LETTER_RE.search(cleaned):
@@ -68,7 +80,9 @@ def validate_name(raw: str) -> ValidationResult:
 
 def validate_email_address(raw: str) -> ValidationResult:
     try:
-        result = validate_email(raw.strip(), check_deliverability=False)
+        result = validate_email(
+            _strip_unicode_controls(raw).strip(), check_deliverability=False
+        )
     except EmailNotValidError:
         return ValidationResult(ok=False, error="invalid_email")
     return ValidationResult(ok=True, value=result.normalized)

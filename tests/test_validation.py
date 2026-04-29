@@ -215,6 +215,33 @@ def test_cv_rejects_oversize() -> None:
     assert result.error == "invalid_cv_size"
 
 
+def test_name_strips_bidi_override() -> None:
+    """U+202E (Right-to-Left Override) must not survive in a stored name."""
+    result = validate_name("Akmal‮Karimov")
+    assert result.ok
+    assert "‮" not in (result.value or "")
+    assert result.value == "AkmalKarimov"
+
+
+def test_name_strips_zero_width_chars() -> None:
+    result = validate_name("Akmal​Karimov‌‍")
+    assert result.ok
+    assert all(ch not in (result.value or "") for ch in ("​", "‌", "‍"))
+
+
+def test_name_strips_c0_controls() -> None:
+    result = validate_name("Akmal\x00Karimov\x07")
+    assert result.ok
+    assert "\x00" not in (result.value or "")
+    assert "\x07" not in (result.value or "")
+
+
+def test_phone_normalises_through_unicode_bidi() -> None:
+    result = validate_phone("‮+998901234567‬")
+    assert result.ok
+    assert result.value == "+998901234567"
+
+
 def test_cv_rejects_zero_size() -> None:
     result = validate_cv_document(
         mime_type="application/pdf",

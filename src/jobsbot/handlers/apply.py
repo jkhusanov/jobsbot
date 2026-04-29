@@ -15,6 +15,7 @@ from ..services.jobs_api import JobsApi, JobsApiError
 from ..services.storage import NewApplication, Storage
 from ..states import ApplyStates
 from ..validation import (
+    _strip_unicode_controls,
     validate_cv_document,
     validate_email_address,
     validate_name,
@@ -232,7 +233,7 @@ async def handle_cv(
             await message.answer(texts.INVALID_CV_TYPE)
         return
 
-    cv_file_name = (doc.file_name or "")[:255] or None
+    cv_file_name = _strip_unicode_controls(doc.file_name or "")[:255] or None
     await state.update_data(
         cv_file_id=doc.file_id,
         cv_file_unique_id=doc.file_unique_id,
@@ -265,6 +266,9 @@ async def handle_cv_wrong_type(message: Message) -> None:
 # --- Step 5: confirm ----------------------------------------------------------
 
 
+_REQUIRED_FIELDS = ("job_id", "name", "phone", "email", "cv_file_id")
+
+
 @router.callback_query(
     ApplyStates.waiting_for_confirmation, F.data == "apply:confirm"
 )
@@ -277,16 +281,25 @@ async def handle_confirm(
     if callback.from_user is None or not isinstance(callback.message, Message):
         await callback.answer()
         return
+
+    # Read state, then clear it BEFORE inserting. If a second confirm tap is
+    # processed concurrently it will see empty data, fail the required-fields
+    # check, and return without inserting a duplicate row.
     data = await state.get_data()
+    if not all(data.get(k) for k in _REQUIRED_FIELDS):
+        await callback.answer()
+        return
+    await state.clear()
+
     new_app = NewApplication(
-        job_id=str(data.get("job_id", "")),
+        job_id=str(data["job_id"]),
         job_title=str(data.get("job_title", "")),
         tg_user_id=callback.from_user.id,
         tg_username=callback.from_user.username,
-        full_name=str(data.get("name", "")),
-        phone=str(data.get("phone", "")),
-        email=str(data.get("email", "")),
-        cv_file_id=str(data.get("cv_file_id", "")),
+        full_name=str(data["name"]),
+        phone=str(data["phone"]),
+        email=str(data["email"]),
+        cv_file_id=str(data["cv_file_id"]),
         cv_file_unique_id=str(data.get("cv_file_unique_id", "")),
         cv_file_name=data.get("cv_file_name"),
         cv_mime_type=data.get("cv_mime_type"),
@@ -294,7 +307,6 @@ async def handle_confirm(
     )
     app_id = await storage.insert_application(new_app)
     log.info("application stored", extra={"app_id": app_id, "job_id": new_app.job_id})
-    await state.clear()
     await callback.message.answer(
         texts.APPLICATION_RECEIVED, reply_markup=keyboards.main_menu()
     )

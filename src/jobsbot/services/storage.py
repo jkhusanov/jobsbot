@@ -82,6 +82,12 @@ class Storage:
         if str(self._path) not in (":memory:", ""):
             self._path.parent.mkdir(parents=True, exist_ok=True)
         async with aiosqlite.connect(self._path) as db:
+            # WAL gives us concurrent readers and a non-blocking writer,
+            # which matters once the bot has more than one user submitting
+            # at the same time. NORMAL synchronous is fine for an audit log.
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA synchronous=NORMAL")
+            await db.execute("PRAGMA foreign_keys=ON")
             await db.executescript(SCHEMA)
             await db.commit()
 

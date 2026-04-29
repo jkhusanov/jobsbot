@@ -21,11 +21,18 @@ class ThrottlingMiddleware(BaseMiddleware):
     the first sample per user.
     """
 
-    def __init__(self, max_events: int = 30, window_seconds: float = 60.0) -> None:
+    def __init__(
+        self,
+        max_events: int = 30,
+        window_seconds: float = 60.0,
+        max_tracked_users: int = 50_000,
+    ) -> None:
         self._max = max_events
         self._window = window_seconds
+        self._max_tracked = max_tracked_users
         self._events: dict[int, deque[float]] = defaultdict(deque)
         self._warned: set[int] = set()
+        self._last_gc: float = 0.0
 
     async def __call__(
         self,
@@ -38,8 +45,15 @@ class ThrottlingMiddleware(BaseMiddleware):
             return await handler(event, data)
 
         now = time.monotonic()
-        events = self._events[user.id]
         cutoff = now - self._window
+
+        # Periodically drop empty deques so an ever-growing user base
+        # doesn't leak memory. Cheap: O(tracked) once per window at most.
+        if now - self._last_gc > self._window:
+            self._gc(cutoff)
+            self._last_gc = now
+
+        events = self._events[user.id]
         while events and events[0] < cutoff:
             events.popleft()
         if len(events) >= self._max:
@@ -55,3 +69,17 @@ class ThrottlingMiddleware(BaseMiddleware):
         if user.id in self._warned and len(events) < self._max // 2:
             self._warned.discard(user.id)
         return await handler(event, data)
+
+    def _gc(self, cutoff: float) -> None:
+        # Drop any user whose entire window has expired.
+        stale = [uid for uid, ev in self._events.items() if not ev or ev[-1] < cutoff]
+        for uid in stale:
+            self._events.pop(uid, None)
+            self._warned.discard(uid)
+        # Hard cap as a final safeguard against pathological growth.
+        if len(self._events) > self._max_tracked:
+            # Drop the oldest half (deterministic by insertion order in py3.7+).
+            to_drop = list(self._events.keys())[: len(self._events) // 2]
+            for uid in to_drop:
+                self._events.pop(uid, None)
+                self._warned.discard(uid)
