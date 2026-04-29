@@ -56,4 +56,6 @@ jobs:
       - name: Audit dependencies
         run: |
           pip install -e .
-          pip-audit --strict --desc
+          # --skip-editable: don't try to look up our own unpublished package
+          # on PyPI; we only care about third-party deps for this audit.
+          pip-audit --strict --desc --skip-editable
